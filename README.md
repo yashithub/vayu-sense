@@ -39,3 +39,6 @@ yarn
 yarn dev
 yarn test
 ```
+---
+### Credits
+This project was bootstrapped using the [vite-react-typescript-tailwind-starter](https://github.com/PDMLab/vite-react-typescript-tailwind-starter) by **PDMLab** and adapted for the Bharatiya Antariksha Hackathon.
