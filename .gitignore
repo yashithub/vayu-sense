@@ -12,10 +12,9 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
 # AWS User-specific
 .idea/**/aws.xml
-
+.env
 # Generated files
 .idea/**/contentModel.xml
 
@@ -101,7 +100,8 @@ modules.xml
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
