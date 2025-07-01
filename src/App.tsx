@@ -32,10 +32,9 @@ async function detectCity(): Promise<string | null> {
       () => resolve(null),
       { timeout: 5000 }
     );
-  });
-}
+  });}
 
-const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai", "Meerut", "Ghaziabad", "Noida"];
+const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai", "Meerut", "Ghaziabad", "Noida","Jhansi","Islamabad"];
 
 const cityImages: Record<string, string> = {
   Delhi:     "https://source.unsplash.com/1600x800/?delhi,skyline",
@@ -49,10 +48,10 @@ const cityImages: Record<string, string> = {
 };
 
 const activities = [
-  { id: 1, img: "https://placehold.co/160x100?text=Garden", label: "Garden 2 km away" },
-  { id: 2, img: "https://placehold.co/160x100?text=Park",   label: "Park 1.5 km away" },
-  { id: 3, img: "https://placehold.co/160x100?text=Pool",   label: "Pool 3 km away" },
-  { id: 4, img: "https://placehold.co/160x100?text=Beach",  label: "Beach 500 m away" },
+  { id: 1, img: "./assets/garden.jpg", label: "Garden 2 km away" },
+  { id: 2, img: "./assets/park.jpg",   label: "Park 1.5 km away" },
+  { id: 3, img: "./assets/pool.jpeg",   label: "Pool 3 km away" },
+  { id: 4, img: "./assets/gym.jpeg",  label: "Gym 500 m away" },
 ];
 
 const aqiInfo = (level: number | null) => {
