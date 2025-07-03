@@ -34,7 +34,7 @@ async function detectCity(): Promise<string | null> {
     );
   });}
 
-const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai", "Meerut", "Ghaziabad", "Noida","Jhansi","Islamabad"];
+// const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai", "Meerut", "Ghaziabad", "Noida","Jhansi","Islamabad"];
 
 const cityImages: Record<string, string> = {
   Delhi:     "https://source.unsplash.com/1600x800/?delhi,skyline",
@@ -54,6 +54,55 @@ const activities = [
   { id: 4, img: "./assets/gym.jpeg",  label: "Gym 500 m away" },
 ];
 
+const backgroundImages: Record<string, string> = {
+  "morning.clear": "morning.clear.png",
+  "morning.clouds": "morning.clouds.png",
+  "morning.fog": "morning.fog.png",
+
+  "afternoon.clear": "afternoon.clear.png",
+  "afternoon.clouds": "afternoon.clouds.png",
+  "afternoon.rain": "afternoon.rain.png",
+  "afternoon.thunderstorm": "afternoon.thunderstorm.png",
+
+  "evening.clear": "evening.clear.png",
+  "evening.clouds": "evening.cloud.png", // ✅ This is correct (not 'clouds')
+  "evening.rain": "evening.rain.png",
+  "evening.thunderstorm": "evening.thunderstorm.png",
+
+  "night.clear": "night.clear.png",
+  "night.clouds": "night.clouds.png",
+  "night.rain": "night.rain.png",
+  "night.thunderstorm": "night.thunderstorm.png",
+
+  // Bonus: snow mode (for rare conditions)
+  "snow": "snow.png",
+
+  "default": "morning.clear.png",
+};
+
+const normalizeWeather = (main: string): string => {
+  const mapping: Record<string, string> = {
+    clear: "clear",
+    clouds: "clouds",
+    rain: "rain",
+    thunderstorm: "thunderstorm",
+    drizzle: "rain",
+    mist: "fog",
+    haze: "fog",
+    fog: "fog",
+    smoke: "fog",
+    dust: "fog",
+    sand: "fog",
+    ash: "fog",
+    squall: "rain",
+    tornado: "thunderstorm",
+  };
+  return mapping[main.toLowerCase()] || "clear";
+};
+
+
+
+
 const aqiInfo = (level: number | null) => {
   switch (level) {
     case 1: return { text: "Good 😊",      color: "bg-green-500"  };
@@ -65,6 +114,21 @@ const aqiInfo = (level: number | null) => {
   }
 };
 
+function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 20) return "evening";
+  return "night";
+}
+
+function getLocalBackground(weather: string, time: string): string {
+  const key = `${time}.${weather}`.toLowerCase();
+  const fileName = backgroundImages[key] || backgroundImages["default"];
+  return new URL(`../assets/background/${fileName}`, import.meta.url).href;
+}
+
+
 // ── main component ─────────────────────────────────────
 export default function App() {
   const [selectedCity, setSelectedCity] = useState("Delhi");
@@ -75,7 +139,8 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const auto = await detectCity();
-      if (auto && cities.includes(auto)) setSelectedCity(auto);
+      if (auto) setSelectedCity(auto);
+
     })();
   }, []);
 
@@ -91,15 +156,27 @@ export default function App() {
         setAqi(aqiData.list[0].main.aqi);
       } catch (err) {
         console.error("Error fetching data:", err);
+        alert("City not found. Please check the spelling and try again.");
       }
+      
+      
     }
     load();
   }, [selectedCity]);
 
   const { text: aqiText, color: aqiColor } = aqiInfo(aqi);
 
+  const weatherMain = normalizeWeather(weather?.weather?.[0]?.main ?? "clear");
+const timeOfDay = getTimeOfDay(); // you must define this helper above
+const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
+
+
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-slate-900 to-gray-800 text-white p-4 md:p-6 overflow-hidden">
+    <div
+  className="h-screen w-screen text-white p-4 md:p-6 overflow-hidden bg-cover bg-center bg-no-repeat"
+  style={{ backgroundImage: `url(${backgroundUrl})` }}
+>
+
       <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl bg-black/10 flex flex-col lg:flex-row">
         {/* sidebar */}
         <aside className="w-full lg:w-24 bg-slate-700/40 backdrop-blur-md flex flex-row lg:flex-col items-center justify-between lg:justify-start py-4 lg:py-6 px-4 lg:px-0">
@@ -129,21 +206,33 @@ export default function App() {
           {/* hero banner */}
           <div
             className="w-full h-40 md:h-48 rounded-xl bg-cover bg-center shadow-lg"
-            style={{ backgroundImage: `url(${cityImages[selectedCity]})` }}
+            style={{ backgroundImage: `url(${cityImages[selectedCity] ?? "https://source.unsplash.com/1600x800/?city,skyline"})` }}
+
           />
 
-          {/* dropdown */}
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="bg-white/20 text-white font-semibold rounded-md px-3 py-1 text-sm backdrop-blur-md w-max"
-          >
-            {cities.map((city) => (
-              <option key={city} value={city} className="text-black">
-                {city}
-              </option>
-            ))}
-          </select>
+         
+          <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).elements.namedItem("city") as HTMLInputElement;
+    setSelectedCity(input.value.trim());
+  }}
+  className="flex gap-2"
+>
+  <input
+    type="text"
+    name="city"
+    placeholder="Search city..."
+    className="bg-white/20 text-white font-semibold rounded-md px-3 py-1 text-sm backdrop-blur-md"
+  />
+  <button
+    type="submit"
+    className="bg-indigo-500 text-white rounded-md px-3 py-1 text-sm"
+  >
+    Search
+  </button>
+</form>
+
 
           {/* header */}
           <div className="flex items-start justify-between flex-wrap gap-4">
@@ -175,7 +264,7 @@ export default function App() {
           </div>
 
           {/* activities */}
-          <section className="bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg">
+          <section className="bg-white/1 backdrop-blur-sm rounded-xl p-4 shadow-md">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-1">
               <span className="text-base">❤</span> Activities in your area
             </h3>
@@ -191,11 +280,11 @@ export default function App() {
 
           {/* forecast + conditions */}
           <div className="flex flex-col lg:flex-row gap-6 flex-1">
-            <section className="flex-1 bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg">
-              <ForecastChart />
+          <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md">
+              <ForecastChart city={selectedCity} />
             </section>
 
-            <section className="w-full lg:w-64 bg-white/10 backdrop-blur-md rounded-xl p-6 shadow-lg flex flex-col gap-4">
+            <section className="w-full lg:w-64 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md flex flex-col gap-4">
               <div className="flex justify-between text-[10px] mb-2 font-semibold uppercase text-white/80">
                 {["Fri", "Sat", "Sun", "Mon", "Tue"].map((d) => (
                   <span key={d} className={d === "Sun" ? "text-white font-bold" : ""}>

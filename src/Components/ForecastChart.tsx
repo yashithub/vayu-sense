@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,11 +14,31 @@ import type { ChartOptions } from "chart.js";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// 🔧 Dummy hourly data — you can replace this with real API data later
-const hours = ["8AM", "11AM", "2PM", "5PM", "8PM", "11PM"];
-const temps = [26, 28, 30, 29, 27, 25];
+// ✅ Component start
+type Props = { city: string };
 
-export default function ForecastChart() {
+export default function ForecastChart({ city }: Props) {
+  const [hours, setHours] = useState<string[]>([]);
+  const [temps, setTemps] = useState<number[]>([]);
+
+  useEffect(() => {
+    async function fetchForecast() {
+      try {
+        const res = await fetch(
+          `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric`
+        );
+        const data = await res.json();
+        const sliced = data.list.slice(0, 6); // 6 time points
+        setHours(sliced.map((item: any) => new Date(item.dt * 1000).getHours() + ":00"));
+        setTemps(sliced.map((item: any) => item.main.temp));
+      } catch (err) {
+        console.error("Failed to load forecast:", err);
+      }
+    }
+
+    fetchForecast();
+  }, [city]);
+
   const data = {
     labels: hours,
     datasets: [
@@ -35,22 +55,22 @@ export default function ForecastChart() {
   };
 
   const options: ChartOptions<"line"> = {
-  responsive: true,
-  plugins: {
-    legend: { display: false },
-    tooltip: { mode: "index", intersect: false },
-  },
-  scales: {
-    x: {
-      ticks: { color: "#ffffff" },
-      grid: { display: false },
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: { mode: "index", intersect: false },
     },
-    y: {
-      ticks: { color: "#ffffff" },
-      grid: { color: "rgba(255,255,255,0.1)" },
+    scales: {
+      x: {
+        ticks: { color: "#ffffff" },
+        grid: { display: false },
+      },
+      y: {
+        ticks: { color: "#ffffff" },
+        grid: { color: "rgba(255,255,255,0.1)" },
+      },
     },
-  },
-};
+  };
 
   return (
     <div className="w-full h-full">
