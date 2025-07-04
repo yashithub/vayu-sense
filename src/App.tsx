@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import ForecastChart from "./Components/ForecastChart";   // <-- ensure lowercase folder
 import { fetchWeather, fetchAQI } from "./api/weather";
+import './App.css';
 
 // ── helpers ─────────────────────────────────────────────
 async function detectCity(): Promise<string | null> {
@@ -140,7 +141,6 @@ export default function App() {
     (async () => {
       const auto = await detectCity();
       if (auto) setSelectedCity(auto);
-
     })();
   }, []);
 
@@ -158,8 +158,6 @@ export default function App() {
         console.error("Error fetching data:", err);
         alert("City not found. Please check the spelling and try again.");
       }
-      
-      
     }
     load();
   }, [selectedCity]);
@@ -167,72 +165,65 @@ export default function App() {
   const { text: aqiText, color: aqiColor } = aqiInfo(aqi);
 
   const weatherMain = normalizeWeather(weather?.weather?.[0]?.main ?? "clear");
-const timeOfDay = getTimeOfDay(); // you must define this helper above
-const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
-
+  const timeOfDay = getTimeOfDay(); // you must define this helper above
+  const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
 
   return (
     <div
-  className="h-screen w-screen text-white p-4 md:p-6 overflow-hidden bg-cover bg-center bg-no-repeat"
-  style={{ backgroundImage: `url(${backgroundUrl})` }}
->
-
+      className="h-screen w-screen text-white p-4 md:p-6 overflow-hidden bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${backgroundUrl})` }}
+    >
       <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl bg-black/10 flex flex-col lg:flex-row">
         {/* sidebar */}
         <aside className="w-full lg:w-24 bg-slate-700/40 backdrop-blur-md flex flex-row lg:flex-col items-center justify-between lg:justify-start py-4 lg:py-6 px-4 lg:px-0">
-  {/* ISRO Branding */}
-  <div className="flex flex-col items-center gap-1 mb-6">
-    <img
-      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRomGuV0pTfFUXGytdHXaWu6bjZVwmgLTX_Yw&s"
-      alt="ISRO Logo"
-      className="w-10 h-10 object-contain"
-    />
-    <div className="text-[10px] font-bold text-slate-300">ISRO</div>
-    <div className="text-xs text-white animate-spin-slow">🛰️</div>
-  </div>
+          {/* ISRO Branding */}
+          <div className="flex flex-col items-center gap-1 mb-6">
+            <img
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRomGuV0pTfFUXGytdHXaWu6bjZVwmgLTX_Yw&s"
+              alt="ISRO Logo"
+              className="w-10 h-10 object-contain"
+            />
+            <div className="text-[10px] font-bold text-slate-300">ISRO</div>
+            <div className="text-xs text-white animate-spin-slow">🛰️</div>
+          </div>
 
-  {/* Sidebar Icons */}
-  <div className="flex lg:flex-col gap-6 lg:gap-4">
-    <SidebarIcon icon={<CloudSun size={24} />} label="weather" />
-    <SidebarIcon icon={<Navigation size={24} />} label="explore" />
-    <SidebarIcon icon={<Globe size={24} />} label="cities" />
-    <SidebarIcon icon={<Settings size={24} />} label="settings" />
-  </div>
-</aside>
-
+          {/* Sidebar Icons */}
+          <div className="flex lg:flex-col gap-6 lg:gap-4">
+            <SidebarIcon icon={<CloudSun size={24} />} label="weather" />
+            <SidebarIcon icon={<Navigation size={24} />} label="explore" />
+            <SidebarIcon icon={<Globe size={24} />} label="cities" />
+            <SidebarIcon icon={<Settings size={24} />} label="settings" />
+          </div>
+        </aside>
 
         {/* main content */}
         <main className="flex-1 p-6 md:p-10 flex flex-col gap-6 overflow-y-auto">
           {/* hero banner */}
           <div
             className="w-full h-40 md:h-48 rounded-xl bg-cover bg-center shadow-lg"
-            style={{ backgroundImage: `url(${cityImages[selectedCity] ?? "https://source.unsplash.com/1600x800/?city,skyline"})` }}
-
+            style={{
+              backgroundImage: `url(${cityImages[selectedCity] ?? "https://source.unsplash.com/1600x800/?city,skyline"})`,
+            }}
           />
-
-         
           <form
-  onSubmit={(e) => {
-    e.preventDefault();
-    const input = (e.target as HTMLFormElement).elements.namedItem("city") as HTMLInputElement;
-    setSelectedCity(input.value.trim());
-  }}
-  className="flex gap-2"
->
-  <input
-    type="text"
-    name="city"
-    placeholder="Search city..."
-    className="bg-white/20 text-white font-semibold rounded-md px-3 py-1 text-sm backdrop-blur-md"
-  />
-  <button
-    type="submit"
-    className="bg-indigo-500 text-white rounded-md px-3 py-1 text-sm"
-  >
-    Search
-  </button>
-</form>
-
+            onSubmit={(e) => {
+              e.preventDefault();
+              const input = (e.target as HTMLFormElement).elements.namedItem("city") as HTMLInputElement;
+              setSelectedCity(input.value.trim());
+            }}
+            className="flex gap-2"
+          >
+            <input
+              type="text"
+              name="city"
+              placeholder="Search city..."
+              className="bg-white/20 text-white font-semibold rounded-md px-3 py-1 text-sm backdrop-blur-md"
+            />
+            <button type="submit" className="bg-indigo-500 text-white rounded-md px-3 py-1 text-sm">
+              Search
+            </button>
+          </form>
+          
 
           {/* header */}
           <div className="flex items-start justify-between flex-wrap gap-4">
@@ -241,9 +232,7 @@ const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
                 <MapPin size={16} />
                 <span>{selectedCity}</span>
               </div>
-              <h2 className="mt-2 text-4xl font-bold">
-                {weather?.weather[0]?.main || "Loading…"}
-              </h2>
+              <h2 className="mt-2 text-4xl font-bold">{weather?.weather[0]?.main || "Loading…"}</h2>
             </div>
             <CloudSun size={96} className="hidden md:block text-white/80" />
           </div>
@@ -280,7 +269,7 @@ const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
 
           {/* forecast + conditions */}
           <div className="flex flex-col lg:flex-row gap-6 flex-1">
-          <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md">
+            <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md">
               <ForecastChart city={selectedCity} />
             </section>
 
@@ -311,6 +300,7 @@ const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
     </div>
   );
 }
+
 
 // ── small reusable components ──────────────────────
 const SidebarIcon = ({ icon, label }: { icon: React.ReactNode; label: string }) => (
