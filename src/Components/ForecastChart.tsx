@@ -28,16 +28,30 @@ export default function ForecastChart({ city }: Props) {
           `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric`
         );
         const data = await res.json();
+        const timezoneOffset = data.city?.timezone ?? 0; // in seconds
+  
         const sliced = data.list.slice(0, 6); // 6 time points
-        setHours(sliced.map((item: any) => new Date(item.dt * 1000).getHours() + ":00"));
+  
+        setHours(
+          sliced.map((item: any) => {
+            const localTime = new Date((item.dt + timezoneOffset) * 1000);
+            return localTime.toLocaleTimeString("en-IN", {
+              hour: "numeric",
+              hour12: true,
+            });
+          })
+        );
+        
         setTemps(sliced.map((item: any) => item.main.temp));
       } catch (err) {
         console.error("Failed to load forecast:", err);
       }
     }
-
+  
     fetchForecast();
   }, [city]);
+  
+
 
   const data = {
     labels: hours,

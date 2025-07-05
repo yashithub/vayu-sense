@@ -14,6 +14,10 @@ import {
 import ForecastChart from "./Components/ForecastChart";   // <-- ensure lowercase folder
 import { fetchWeather, fetchAQI } from "./api/weather";
 import './App.css';
+import AQIDashboard from "./Components/AQIdashboard";
+import LiveAQIMap from "./Components/LiveAQIMap";
+
+
 
 // ── helpers ─────────────────────────────────────────────
 async function detectCity(): Promise<string | null> {
@@ -37,23 +41,23 @@ async function detectCity(): Promise<string | null> {
 
 // const cities = ["Delhi", "Mumbai", "Bengaluru", "Kolkata", "Chennai", "Meerut", "Ghaziabad", "Noida","Jhansi","Islamabad"];
 
-const cityImages: Record<string, string> = {
-  Delhi:     "https://source.unsplash.com/1600x800/?delhi,skyline",
-  Mumbai:    "https://source.unsplash.com/1600x800/?mumbai,skyline",
-  Bengaluru: "https://source.unsplash.com/1600x800/?bangalore,skyline",
-  Kolkata:   "https://source.unsplash.com/1600x800/?kolkata,skyline",
-  Chennai:   "https://source.unsplash.com/1600x800/?chennai,skyline",
-  Meerut:    "https://source.unsplash.com/1600x800/?meerut,skyline",
-  Ghaziabad: "https://source.unsplash.com/1600x800/?ghaziabad,skyline",
-  Noida:     "https://source.unsplash.com/1600x800/?noida,skyline",
-};
+// const cityImages: Record<string, string> = {
+//   Delhi:     "https://source.unsplash.com/1600x800/?delhi,skyline",
+//   Mumbai:    "https://source.unsplash.com/1600x800/?mumbai,skyline",
+//   Bengaluru: "https://source.unsplash.com/1600x800/?bangalore,skyline",
+//   Kolkata:   "https://source.unsplash.com/1600x800/?kolkata,skyline",
+//   Chennai:   "https://source.unsplash.com/1600x800/?chennai,skyline",
+//   Meerut:    "https://source.unsplash.com/1600x800/?meerut,skyline",
+//   Ghaziabad: "https://source.unsplash.com/1600x800/?ghaziabad,skyline",
+//   Noida:     "https://source.unsplash.com/1600x800/?noida,skyline",
+// };
 
-const activities = [
-  { id: 1, img: "./assets/garden.jpg", label: "Garden 2 km away" },
-  { id: 2, img: "./assets/park.jpg",   label: "Park 1.5 km away" },
-  { id: 3, img: "./assets/pool.jpeg",   label: "Pool 3 km away" },
-  { id: 4, img: "./assets/gym.jpeg",  label: "Gym 500 m away" },
-];
+// const activities = [
+//   { id: 1, img: "./assets/garden.jpg", label: "Garden 2 km away" },
+//   { id: 2, img: "./assets/park.jpg",   label: "Park 1.5 km away" },
+//   { id: 3, img: "./assets/pool.jpeg",   label: "Pool 3 km away" },
+//   { id: 4, img: "./assets/gym.jpeg",  label: "Gym 500 m away" },
+// ];
 
 const backgroundImages: Record<string, string> = {
   "morning.clear": "morning.clear.png",
@@ -81,25 +85,16 @@ const backgroundImages: Record<string, string> = {
   "default": "morning.clear.png",
 };
 
-const normalizeWeather = (main: string): string => {
-  const mapping: Record<string, string> = {
-    clear: "clear",
-    clouds: "clouds",
-    rain: "rain",
-    thunderstorm: "thunderstorm",
-    drizzle: "rain",
-    mist: "fog",
-    haze: "fog",
-    fog: "fog",
-    smoke: "fog",
-    dust: "fog",
-    sand: "fog",
-    ash: "fog",
-    squall: "rain",
-    tornado: "thunderstorm",
-  };
-  return mapping[main.toLowerCase()] || "clear";
+const normalizeWeather = (desc: string): string => {
+  desc = desc.toLowerCase();
+  if (desc.includes("thunderstorm")) return "thunderstorm";
+  if (desc.includes("rain")) return "rain";
+  if (desc.includes("cloud")) return "clouds";
+  if (desc.includes("clear")) return "clear";
+  if (desc.includes("fog") || desc.includes("mist") || desc.includes("haze")) return "fog";
+  return "clear";
 };
+
 
 
 
@@ -164,7 +159,9 @@ export default function App() {
 
   const { text: aqiText, color: aqiColor } = aqiInfo(aqi);
 
-  const weatherMain = normalizeWeather(weather?.weather?.[0]?.main ?? "clear");
+  const main = weather?.weather?.[0]?.main ?? "clear";
+  const desc = weather?.weather?.[0]?.description ?? "";
+  const weatherMain = normalizeWeather(desc || main);  
   const timeOfDay = getTimeOfDay(); // you must define this helper above
   const backgroundUrl = getLocalBackground(weatherMain, timeOfDay);
 
@@ -202,7 +199,7 @@ export default function App() {
           <div
             className="w-full h-40 md:h-48 rounded-xl bg-cover bg-center shadow-lg"
             style={{
-              backgroundImage: `url(${cityImages[selectedCity] ?? "https://source.unsplash.com/1600x800/?city,skyline"})`,
+             // backgroundImage: `url(${cityImages[selectedCity] ?? "https://source.unsplash.com/1600x800/?city,skyline"})`,
             }}
           />
           <form
@@ -253,7 +250,7 @@ export default function App() {
           </div>
 
           {/* activities */}
-          <section className="bg-white/1 backdrop-blur-sm rounded-xl p-4 shadow-md">
+          {/* <section className="bg-white/1 backdrop-blur-sm rounded-xl p-4 shadow-md">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-1">
               <span className="text-base">❤</span> Activities in your area
             </h3>
@@ -265,36 +262,26 @@ export default function App() {
                 </div>
               ))}
             </div>
-          </section>
+          </section> */}
 
-          {/* forecast + conditions */}
-          <div className="flex flex-col lg:flex-row gap-6 flex-1">
-            <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md">
-              <ForecastChart city={selectedCity} />
-            </section>
+          {/* forecast + aqi + map */}
+<div className="flex flex-col lg:flex-row gap-6 flex-1">
+  <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-4 shadow-md min-h-[200px]">
+    <ForecastChart city={selectedCity} />
+  </section>
 
-            <section className="w-full lg:w-64 bg-white/5 backdrop-blur-lg rounded-xl p-6 shadow-md flex flex-col gap-4">
-              <div className="flex justify-between text-[10px] mb-2 font-semibold uppercase text-white/80">
-                {["Fri", "Sat", "Sun", "Mon", "Tue"].map((d) => (
-                  <span key={d} className={d === "Sun" ? "text-white font-bold" : ""}>
-                    {d}
-                  </span>
-                ))}
-              </div>
-              <div className="text-xs flex items-center gap-1">
-                <SunMedium size={14} /> 8:00 PM GMT
-              </div>
-              <hr className="border-white/20" />
-              <h4 className="text-xs uppercase tracking-wider text-indigo-100">Air Conditions</h4>
-              <InfoRow icon={<GaugeCircle size={14} />} label="Real Feel" value={`${weather?.main?.feels_like ?? "…"}°`} />
-              <InfoRow icon={<Wind size={14} />} label="Wind" value={`${weather?.wind?.speed ?? "…"} km/h`} />
-              <InfoRow
-                icon={<Droplets size={14} />}
-                label="AQI"
-                value={<span className={`px-2 py-0.5 rounded-full text-xs ${aqiColor}`}>{aqiText}</span>}
-              />
-            </section>
-          </div>
+  <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-4 shadow-md min-h-[200px]">
+    <AQIDashboard city={selectedCity} />
+  </section>
+
+  <section className="flex-1 bg-white/5 backdrop-blur-lg rounded-xl p-4 shadow-md overflow-hidden relative">
+  <h3 className="text-md font-semibold mb-3 text-white/90">Live AQI Map</h3>
+  <LiveAQIMap />
+</section>
+
+</div>
+
+
         </main>
       </div>
     </div>
