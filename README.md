@@ -5,7 +5,6 @@ Template for vite, React + tailwindcss + TypeScript projects with some tools pre
 ## About
 
 Template for vite, React + tailwindcss + TypeScript projects with some tools preconfigured.
-
 ![Screenshot](assets/screenshot.png)
 
 ### Libraries
